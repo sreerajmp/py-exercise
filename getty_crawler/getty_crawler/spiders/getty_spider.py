@@ -3,7 +3,7 @@ import os
 from urllib.parse import urlparse
 
 
-class GettySpiderSpider(scrapy.Spider):
+class GettySpider(scrapy.Spider):
     name = "getty_spider"
     allowed_domains = ["www.gettyimages.in",'media.gettyimages.com']
     start_urls = ["https://www.gettyimages.in/photos/aamir-khan-actor"]
@@ -14,15 +14,13 @@ class GettySpiderSpider(scrapy.Spider):
 
         for img in response.css('img::attr(src)').getall():
             if "media.gettyimages.com/id" in img:
-                # Ensure the URL is complete
-                img_url = response.urljoin(img)
-                self.log(f'Found image URL: {img_url}')
-                yield scrapy.Request(img_url, callback=self.save_image)
+                yield scrapy.Request(img, callback=self.save_image)
     def save_image(self, response):
-        self.log(f'Downloading image from: {response}')
-        # self.log(f'Downloading image from: {response.url}')
-        parsed_url = urlparse(response.url)
-        filename = parsed_url.path.split('/')[-1] 
+        parsed_url = urlparse(response.url)        
+        path_segments = parsed_url.path.split('/')
+        img_id = path_segments[-3]  
+        img_desc = path_segments[-1].split('.')[0]  
+        filename = f"{img_desc}-id{img_id}.jpg"
         path = os.path.join('images', filename)
 
         with open(path, 'wb') as f:
