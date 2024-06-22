@@ -8,6 +8,13 @@ class GettySpider(scrapy.Spider):
     allowed_domains = ["www.gettyimages.in",'media.gettyimages.com']
     start_urls = ["https://www.gettyimages.in/photos/aamir-khan-actor"]
 
+    downloaded_images = 0
+    total_images_to_download = 60
+
+    custom_settings = {
+        'LOG_LEVEL': 'WARNING',
+        'LOG_FORMAT': '%(message)s'
+    }
     def parse(self, response):
         if not os.path.exists('images'):
             os.makedirs('images')
@@ -25,3 +32,8 @@ class GettySpider(scrapy.Spider):
 
         with open(path, 'wb') as f:
             f.write(response.body)
+            self.downloaded_images += 1
+            print(f'\rDownloaded {self.downloaded_images} out of {self.total_images_to_download} images', end='', flush=True)
+            
+            if self.downloaded_images >= self.total_images_to_download:
+                print( '\rDownloaded all required 60 images')
